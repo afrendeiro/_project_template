@@ -1,0 +1,14 @@
+parmap
+tqdm
+pandas
+numpy
+numpy-groupies
+matplotlib
+seaborn
+tifffile==2020.6.3
+scikit-image
+pingouin
+scanpy
+
+git+ssh://git@github.com/ElementoLab/imc.git
+git+ssh://git@github.com/afrendeiro/seaborn_extensions.git@0.0.4
