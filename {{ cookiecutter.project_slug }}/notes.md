@@ -1,6 +1,4 @@
-# Project name
-
-Project description
+# {{ cookiecutter.project_description }}
 
 ## Scientific questions
 

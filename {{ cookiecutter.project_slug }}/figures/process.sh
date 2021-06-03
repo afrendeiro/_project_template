@@ -21,7 +21,7 @@
 # 2.b Rasterization reduces file size and memory usage when editing but one drawback is that it cannot be further reduced.
 # 2.c Sometimes it's better not to rasterize but imediately minify a SVG.
 
-
+{%raw%}
 echo "Preparing manuscript figures"
 
 ROOT_DIR=`pwd`
@@ -145,3 +145,4 @@ if [ $CLEANUP_TEMP == "TRUE" ]; then
     PDFS=${FIGURES[@]/svg/pdf}
     rm ${PDFS[@]/.pdf/.trimmed.pdf}
 fi
+{%endraw%} 
