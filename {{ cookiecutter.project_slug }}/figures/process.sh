@@ -140,9 +140,9 @@ pdfunite \
 
 
 if [ $CLEANUP_TEMP == "TRUE" ]; then
-    rm ${FIGURES[@]/.svg/.trimmed.svg}
+    rm ${FIGURES[@]//.svg/.trimmed.svg}
 
-    PDFS=${FIGURES[@]/svg/pdf}
-    rm ${PDFS[@]/.pdf/.trimmed.pdf}
+    PDFS=${FIGURES[@]//svg/pdf}
+    rm ${PDFS[@]//.pdf/.trimmed.pdf}
 fi
-{%endraw%} 
+{%endraw%}
