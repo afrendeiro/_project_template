@@ -16,27 +16,7 @@ import matplotlib.pyplot as plt  # type: ignore[import]
 import seaborn as sns  # type: ignore[import]
 
 from imc import Project  # type: ignore[import]
-from imc.types import Path, DataFrame  # type: ignore[import]
-
-
-# Initialize project
-prj = Project(Config.metadata_dir / "samples.csv")
-
-# Filter channels and ROIs
-channels = (
-    prj.channel_labels.stack().drop_duplicates().reset_index(level=1, drop=True)
-)
-channels_exclude = channels.loc[
-    channels.str.contains(r"^\d")
-    | channels.str.contains("|".join(Config.channels_exclude_strings))
-].tolist() + ["<EMPTY>(Sm152-In115)"]
-channels_include = channels[~channels.isin(channels_exclude)]
-
-for roi in prj.rois:
-    roi.set_channel_exclude(channels_exclude)
-
-for s in prj:
-    s.rois = [r for r in s if r.name not in Config.roi_exclude_strings]
+from src.types import Path, DataFrame  # type: ignore[import]
 
 
 class Config:
@@ -79,9 +59,7 @@ class Config:
 
     # Output files
     metadata_file: Final[Path] = metadata_dir / "clinical_annotation.pq"
-    quantification_file: Final[Path] = (
-        results_dir / "cell_type" / "quantification.pq"
-    )
+    quantification_file: Final[Path] = results_dir / "cell_type" / "quantification.pq"
     gating_file: Final[Path] = results_dir / "cell_type" / "gating.pq"
     h5ad_file: Final[Path] = (
         results_dir / "cell_type" / "anndata.all_cells.processed.h5ad"
@@ -91,16 +69,30 @@ class Config:
     sample_areas_file: Final[Path] = results_dir / "sample_areas.csv"
 
 
+# Initialize project
+prj = Project(Config.metadata_dir / "samples.csv")
+
+# Filter channels and ROIs
+channels = prj.channel_labels.stack().drop_duplicates().reset_index(level=1, drop=True)
+channels_exclude = channels.loc[
+    channels.str.contains(r"^\d")
+    | channels.str.contains("|".join(Config.channels_exclude_strings))
+].tolist() + ["<EMPTY>(Sm152-In115)"]
+channels_include = channels[~channels.isin(channels_exclude)]
+
+for roi in prj.rois:
+    roi.set_channel_exclude(channels_exclude)
+
+for s in prj:
+    s.rois = [r for r in s if r.name not in Config.roi_exclude_strings]
+
+
 # # ROIs
 roi_names = [x.name for x in prj.rois]
 Config.roi_attributes = (
     pd.DataFrame(
         np.asarray(
-            [
-                getattr(r.sample, attr)
-                for r in prj.rois
-                for attr in Config.attributes
-            ]
+            [getattr(r.sample, attr) for r in prj.rois for attr in Config.attributes]
         ).reshape((-1, len(Config.attributes))),
         index=roi_names,
         columns=Config.attributes,
@@ -115,22 +107,18 @@ sample_names = [x.name for x in prj.samples]
 Config.sample_attributes = (
     pd.DataFrame(
         np.asarray(
-            [
-                getattr(s, attr)
-                for s in prj.samples
-                for attr in Config.attributes
-            ]
+            [getattr(s, attr) for s in prj.samples for attr in Config.attributes]
         ).reshape((-1, len(Config.attributes))),
         index=sample_names,
         columns=Config.attributes,
     )
     .rename_axis(index="sample")
-    .drop(["name"], axis=1)
+    .drop(["name"], axis=1, errors="ignore")
 )
 
 for df in [Config.roi_attributes, Config.sample_attributes]:
     for cat, order in Config.cat_order.items():
         df[cat] = pd.Categorical(df[cat], categories=order, ordered=True)
 
-    # Change dtype of integers
+    # Change dtype of integers (if needed)
     df["var1"] = df["var1"].astype(int)

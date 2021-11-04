@@ -6,7 +6,7 @@ Analysis description.
 
 import sys
 
-from _config import prj, Config as config
+from src._config import prj, Config as config
 
 
 def main() -> int:
@@ -25,7 +25,7 @@ def step2() -> None:
     ...
 
 
-if __name__ == "__main__":
+if __name__ == "__main__" and "get_ipython" not in locals():
     try:
         sys.exit(main())
     except KeyboardInterrupt:
